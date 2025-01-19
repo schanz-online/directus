@@ -108,6 +108,7 @@
 		"@vueuse/router": "catalog:",
 		"ai": "catalog:",
 		"apexcharts": "catalog:",
+		"async-mutex": "0.5.0",
 		"axios": "catalog:",
 		"base-64": "catalog:",
 		"caret-pos": "catalog:",

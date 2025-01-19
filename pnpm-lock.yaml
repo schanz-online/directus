@@ -1736,6 +1736,9 @@ importers:
       apexcharts:
         specifier: 'catalog:'
         version: 4.7.0
+      async-mutex:
+        specifier: 0.5.0
+        version: 0.5.0
       axios:
         specifier: 'catalog:'
         version: 1.12.2

@@ -7,7 +7,7 @@ import { pushGroupOptionsDown } from '@/utils/push-group-options-down';
 import { useElementSize } from '@directus/composables';
 import { ContentVersion, Field, ValidationError } from '@directus/types';
 import { assign, cloneDeep, isEmpty, isEqual, isNil, omit } from 'lodash';
-import { computed, onBeforeUpdate, provide, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onBeforeUpdate, provide, ref, toRaw, watch, watchEffect } from 'vue';
 import type { MenuOptions } from './components/form-field-menu.vue';
 import FormField from './components/form-field.vue';
 import ValidationErrors from './components/validation-errors.vue';
@@ -16,6 +16,7 @@ import type { ComparisonContext, FieldValues, FormField as TFormField } from './
 import { getFormFields } from './utils/get-form-fields';
 import { updateFieldWidths } from './utils/update-field-widths';
 import { updateSystemDivider } from './utils/update-system-divider';
+import { shadowNone, useShadowStore } from '@/stores/shadow';
 
 const props = withDefaults(
 	defineProps<{
@@ -140,6 +141,29 @@ watch(
 		if (newVal?.length > 0) el?.value?.scrollIntoView({ behavior: 'smooth' });
 	},
 );
+
+const shadowStore = useShadowStore();
+let shadowId: object | null = null;
+const shadowLoaded = ref(false);
+
+watchEffect(async () => {
+	const collectionKey = props.fields?.at(0)?.collection;
+
+	if (!props.loading && !shadowLoaded.value) {
+		if (collectionKey != null && collectionKey !== 'directus_settings' && props.primaryKey != null) {
+			shadowId = await shadowStore.push(collectionKey, props.primaryKey, props.modelValue !== null ? toRaw(props.modelValue) : {});
+		}
+
+		shadowLoaded.value = true;
+	}
+});
+
+onBeforeUnmount(async () => {
+	if (shadowId !== null) {
+		await shadowStore.pop(shadowId);
+		shadowId = null;
+	}
+});
 
 provide('values', values);
 
@@ -267,7 +291,14 @@ function setValue(fieldKey: string, value: any, opts?: { force?: boolean }) {
 
 	const edits = props.modelValue ? cloneDeep(props.modelValue) : {};
 	edits[fieldKey] = value;
-	emit('update:modelValue', edits);
+
+	if (shadowId === null) {
+		emit('update:modelValue', edits);
+	} else {
+		shadowStore.updateValue(shadowId, field as Field, value === undefined ? shadowNone : value).then(
+			() => emit('update:modelValue', edits)
+		);
+	}
 }
 
 function apply(updates: { [field: string]: any }) {
@@ -306,7 +337,14 @@ function unsetValue(field: TFormField | undefined) {
 	if (field.field in (props.modelValue || {})) {
 		const newEdits = { ...props.modelValue };
 		delete newEdits[field.field];
-		emit('update:modelValue', newEdits);
+
+		if (shadowId === null) {
+			emit('update:modelValue', newEdits);
+		} else {
+			shadowStore.updateValue(shadowId, field as Field, shadowNone).then(
+				() => emit('update:modelValue', newEdits)
+			);
+		}
 	}
 }
 
@@ -387,7 +425,7 @@ function getComparisonIndicatorClasses(field: TFormField, isGroup = false) {
 </script>
 
 <template>
-	<div ref="el" :class="['v-form', gridClass, { inline }]">
+	<div v-if="shadowLoaded" ref="el" :class="['v-form', gridClass, { inline }]">
 		<validation-errors
 			v-if="showValidationErrors && validationErrors.length > 0"
 			:validation-errors="validationErrors"
