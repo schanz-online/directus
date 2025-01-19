@@ -3,6 +3,7 @@ import { validatePayload } from '@directus/utils';
 import { isArray, mergeWith } from 'lodash';
 import type { ContentVersionMaybeNew } from '@/types/versions';
 import { parseFilter } from '@/utils/parse-filter';
+import { useShadowStore } from '@/stores/shadow';
 
 export function applyConditions(
 	item: Record<string, any>,
@@ -17,7 +18,7 @@ export function applyConditions(
 
 			// because $version is not an item field, we need to add it to the validation context
 			const validationContext = {
-				...item,
+				...useShadowStore().extendValidationPayload(item, field),
 				$version: version?.name ?? null,
 			};
 
