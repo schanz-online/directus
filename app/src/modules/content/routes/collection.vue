@@ -462,7 +462,7 @@ function clearFilters() {
 				</v-dialog>
 
 				<v-button
-					v-if="selection.length > 0"
+					v-if="selection.length > 0 && false"
 					v-tooltip.bottom="batchEditAllowed ? $t('edit') : $t('not_allowed')"
 					rounded
 					icon
