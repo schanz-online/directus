@@ -562,7 +562,7 @@ function clearFilters() {
 				</VDialog>
 
 				<PrivateViewHeaderBarActionButton
-					v-if="selection.length > 0 && !isVersion"
+					v-if="selection.length > 0 && !isVersion && false"
 					v-tooltip.bottom="batchEditAllowed ? $t('edit') : $t('not_allowed')"
 					variant="ghost"
 					:disabled="batchEditAllowed === false"
