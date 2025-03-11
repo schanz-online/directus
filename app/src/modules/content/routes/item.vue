@@ -283,9 +283,8 @@ const internalPrimaryKey = computed(() => {
 });
 
 const disabledOptions = computed(() => {
-	if (!createAllowed.value) return ['save-and-add-new', 'save-as-copy'];
-	if (isNew.value) return ['save-as-copy'];
-	return [];
+	if (!createAllowed.value) return ['save-and-add-new', 'save-as-copy', 'save-and-stay'];
+	return ['save-as-copy', 'save-and-stay'];
 });
 
 watch(currentVersion, async () => {
@@ -797,7 +796,7 @@ function useItemNavigation() {
 				:loading="saving"
 				:disabled="!isSavable"
 				small
-				@click="saveAndQuit"
+				@click="saveAndStay"
 			>
 				<VIcon name="check" small />
 
@@ -805,9 +804,8 @@ function useItemNavigation() {
 					<SaveOptions
 						v-if="collectionInfo.meta && collectionInfo.meta.singleton !== true && isSavable === true"
 						:disabled-options="disabledOptions"
-						@save-and-stay="saveAndStay"
+						@save-and-quit="saveAndQuit"
 						@save-and-add-new="saveAndAddNew"
-						@save-as-copy="saveAsCopyAndNavigate"
 						@discard-and-stay="discardAndStay"
 					/>
 				</template>
