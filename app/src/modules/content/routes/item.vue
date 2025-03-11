@@ -226,9 +226,8 @@ const internalPrimaryKey = computed(() => {
 });
 
 const disabledOptions = computed(() => {
-	if (!createAllowed.value) return ['save-and-add-new', 'save-as-copy'];
-	if (isNew.value) return ['save-as-copy'];
-	return [];
+	if (!createAllowed.value) return ['save-and-add-new', 'save-as-copy', 'save-and-stay'];
+	return ['save-as-copy', 'save-and-stay'];
 });
 
 watch(currentVersion, () => {
@@ -674,7 +673,7 @@ function useCollectionRoute() {
 				:tooltip="saveAllowed ? t('save') : t('not_allowed')"
 				:loading="saving"
 				:disabled="!isSavable"
-				@click="saveAndQuit"
+				@click="saveAndStay"
 			>
 				<v-icon name="check" />
 
@@ -682,9 +681,8 @@ function useCollectionRoute() {
 					<save-options
 						v-if="collectionInfo.meta && collectionInfo.meta.singleton !== true && isSavable === true"
 						:disabled-options="disabledOptions"
-						@save-and-stay="saveAndStay"
+						@save-and-quit="saveAndQuit"
 						@save-and-add-new="saveAndAddNew"
-						@save-as-copy="saveAsCopyAndNavigate"
 						@discard-and-stay="discardAndStay"
 					/>
 				</template>
