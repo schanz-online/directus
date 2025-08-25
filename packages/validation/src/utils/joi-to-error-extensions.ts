@@ -106,13 +106,13 @@ export const joiValidationErrorItemToErrorExtensions = (
 			case 'nstarts_with':
 			case 'istarts_with':
 			case 'nistarts_with':
-				extensions.substring = regex.substring(2, regex.lastIndexOf('/') - 2);
+				extensions.substring = regex.substring(2, regex.lastIndexOf('/') - 2).replaceAll('\\/', '/');
 				break;
 			case 'ends_with':
 			case 'nends_with':
 			case 'iends_with':
 			case 'niends_with':
-				extensions.substring = regex.substring(3, regex.lastIndexOf('/') - 1);
+				extensions.substring = regex.substring(3, regex.lastIndexOf('/') - 1).replaceAll('\\/', '/');
 				break;
 		}
 	}
