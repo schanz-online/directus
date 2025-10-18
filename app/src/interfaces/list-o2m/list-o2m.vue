@@ -21,6 +21,7 @@ import { render } from 'micromustache';
 import { computed, inject, ref, toRefs, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Draggable from 'vuedraggable';
+import { router } from '@/router';
 
 const props = withDefaults(
 	defineProps<{
@@ -40,6 +41,7 @@ const props = withDefaults(
 		filter?: Filter | null;
 		enableSearchFilter?: boolean;
 		enableLink?: boolean;
+		disableSideView?: boolean;
 		limit?: number;
 		sort?: string;
 		sortDirection?: '+' | '-';
@@ -56,8 +58,9 @@ const props = withDefaults(
 		filter: null,
 		enableSearchFilter: false,
 		enableLink: false,
-		limit: 15,
-	},
+		disableSideView: false,
+		limit: 15
+	}
 );
 
 const emit = defineEmits(['input']);
@@ -70,7 +73,7 @@ const value = computed({
 	get: () => props.value,
 	set: (val) => {
 		emit('input', val);
-	},
+	}
 });
 
 const templateWithDefaults = computed(() => {
@@ -91,7 +94,7 @@ const fields = computed(() => {
 	} else {
 		displayFields = adjustFieldsForDisplays(
 			getFieldsFromTemplate(templateWithDefaults.value),
-			relationInfo.value.relatedCollection.collection,
+			relationInfo.value.relatedCollection.collection
 		);
 	}
 
@@ -104,14 +107,14 @@ const search = ref('');
 const searchFilter = ref<Filter>();
 
 const manualSort = ref<Sort | null>(
-	props.sort && !relationInfo.value?.sortField ? { by: props.sort, desc: props.sortDirection === '-' } : null,
+	props.sort && !relationInfo.value?.sortField ? { by: props.sort, desc: props.sortDirection === '-' } : null
 );
 
 const query = computed<RelationQueryMultiple>(() => {
 	const q: RelationQueryMultiple = {
 		limit: limit.value,
 		page: page.value,
-		fields: fields.value || ['id'],
+		fields: fields.value || ['id']
 	};
 
 	if (!relationInfo.value) {
@@ -148,7 +151,7 @@ const {
 	selected,
 	isItemSelected,
 	isLocalItem,
-	getItemEdits,
+	getItemEdits
 } = useRelationMultiple(value, query, relationInfo, primaryKey, version);
 
 const { createAllowed, deleteAllowed, updateAllowed } = useRelationPermissionsO2M(relationInfo);
@@ -161,8 +164,8 @@ const showingCount = computed(() =>
 		currentPage: page.value,
 		perPage: limit.value,
 		isFiltered: !!(search.value || searchFilter.value),
-		i18n: { t, n },
-	}),
+		i18n: { t, n }
+	})
 );
 
 const headers = ref<Array<any>>([]);
@@ -202,24 +205,24 @@ watch(
 					text: field.name,
 					value: key,
 					width: contentWidth[key] !== undefined && contentWidth[key] < 10 ? contentWidth[key] * 16 + 10 : 160,
-					sortable: !['json'].includes(field.type),
+					sortable: !['json'].includes(field.type)
 				};
 			})
 			.filter((key) => key !== null);
 	},
-	{ immediate: true },
+	{ immediate: true }
 );
 
 const spacings = {
 	compact: 32,
 	cozy: 48,
-	comfortable: 64,
+	comfortable: 64
 };
 
 const tableRowHeight = computed(() => spacings[props.tableSpacing] ?? spacings.cozy);
 
 const allowDrag = computed(
-	() => totalItemCount.value <= limit.value && relationInfo.value?.sortField !== undefined && !props.disabled,
+	() => totalItemCount.value <= limit.value && relationInfo.value?.sortField !== undefined && !props.disabled
 );
 
 function sortItems(items: DisplayItem[]) {
@@ -235,7 +238,7 @@ function sortItems(items: DisplayItem[]) {
 			$type: item.$type,
 			$edits: item.$edits,
 			...getItemEdits(item),
-			[sortField]: index + 1,
+			[sortField]: index + 1
 		};
 
 		if (!isNil(relatedId)) {
@@ -277,6 +280,8 @@ function editItem(item: DisplayItem) {
 
 	if (item?.$type === 'created' && !isItemSelected(item)) {
 		currentlyEditing.value = '+';
+	} else if (props.disableSideView) {
+		router.push(getLinkForItem(item)!);
 	} else {
 		currentlyEditing.value = item[relatedPkField];
 	}
@@ -318,7 +323,7 @@ const selectedKeys = computed(() => {
 	return selection.value
 		.map(
 			// use `$index` for newly created items that don’t have a PK yet
-			(item) => item[relationInfo.value!.relatedPrimaryKeyField.field] ?? item.$index ?? null,
+			(item) => item[relationInfo.value!.relatedPrimaryKeyField.field] ?? item.$index ?? null
 		)
 		.filter((key) => !isNil(key));
 });
@@ -336,7 +341,7 @@ function stageBatchEdits(edits: Record<string, any>) {
 			$type: item.$type,
 			$edits: item.$edits,
 			...getItemEdits(item),
-			...edits,
+			...edits
 		};
 
 		if (relatedId !== null) {
@@ -353,7 +358,7 @@ const values = inject('values', ref<Record<string, any>>({}));
 
 const customFilter = computed(() => {
 	const filter: Filter = {
-		_and: [],
+		_and: []
 	};
 
 	const customFilter = parseFilter(
@@ -363,7 +368,7 @@ const customFilter = computed(() => {
 			}
 
 			return val;
-		}),
+		})
 	);
 
 	if (!isEmpty(customFilter)) filter._and.push(customFilter);
@@ -374,22 +379,22 @@ const customFilter = computed(() => {
 		_or: [
 			{
 				[relationInfo.value.reverseJunctionField.field]: {
-					_neq: props.primaryKey,
-				},
+					_neq: props.primaryKey
+				}
 			},
 			{
 				[relationInfo.value.reverseJunctionField.field]: {
-					_null: true,
-				},
-			},
-		],
+					_null: true
+				}
+			}
+		]
 	};
 
 	if (selectedPrimaryKeys.value.length > 0) {
 		filter._and.push({
 			[relationInfo.value.relatedPrimaryKeyField.field]: {
-				_nin: selectedPrimaryKeys.value,
-			},
+				_nin: selectedPrimaryKeys.value
+			}
 		});
 	}
 

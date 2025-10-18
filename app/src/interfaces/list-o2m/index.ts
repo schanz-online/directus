@@ -233,6 +233,20 @@ export default defineInterface({
 					width: 'half',
 				},
 			},
+			{
+				field: 'disableSideView',
+				name: 'Disable side view',
+				schema: {
+					default_value: false,
+				},
+				meta: {
+					interface: 'boolean',
+					options: {
+						label: 'Disable side view',
+					},
+					width: 'half',
+				},
+			},
 		];
 	},
 	recommendedDisplays: ['related-values'],
