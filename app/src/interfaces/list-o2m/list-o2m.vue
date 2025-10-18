@@ -33,6 +33,7 @@ import DrawerCollection from '@/views/private/components/drawer-collection.vue';
 import DrawerItem from '@/views/private/components/drawer-item.vue';
 import RenderTemplate from '@/views/private/components/render-template.vue';
 import SearchInput from '@/views/private/components/search-input.vue';
+import { router } from '@/router';
 
 const props = withDefaults(
 	defineProps<{
@@ -53,6 +54,7 @@ const props = withDefaults(
 		filter?: Filter | null;
 		enableSearchFilter?: boolean;
 		enableLink?: boolean;
+		disableSideView?: boolean;
 		limit?: number;
 		sort?: string;
 		sortDirection?: '+' | '-';
@@ -70,6 +72,7 @@ const props = withDefaults(
 		filter: null,
 		enableSearchFilter: false,
 		enableLink: false,
+		disableSideView: false,
 		limit: 15,
 	},
 );
@@ -299,6 +302,8 @@ function editItem(item: DisplayItem) {
 
 	if (item?.$type === 'created' && !isItemSelected(item)) {
 		currentlyEditing.value = '+';
+	} else if (props.disableSideView) {
+		router.push(getLinkForItem(item)!);
 	} else {
 		currentlyEditing.value = item[relatedPkField];
 	}
