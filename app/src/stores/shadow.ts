@@ -42,7 +42,7 @@ export const useShadowStore = defineStore('shadowStore', () => {
 	async function push(
 		collectionKey: string,
 		primaryKey: number | string,
-		modifiedValues: Record<string, any>,
+		modifiedValues: Record<string, any>
 	): Promise<object> {
 		return await pushMutex.runExclusive(async () => {
 			const prevEntry = stack[stack.length - 1];
@@ -109,17 +109,31 @@ export const useShadowStore = defineStore('shadowStore', () => {
 			const entry = stack[index]!;
 
 			if (entry.collectionKey === collectionKey) {
-				return entry.item;
+				return overwriteNonObjects(entry.item, values);
 			}
 		}
 
 		return values;
 	}
 
+	function overwriteNonObjects(base: Record<string, any>, values: Record<string, any>): Record<string, any> {
+		const result = { ...base };
+
+		for (const [key, value] of Object.entries(values)) {
+			const baseValue = result[key];
+
+			if (baseValue === undefined || (typeof baseValue !== 'object' && typeof value !== 'object')) {
+				result[key] = value;
+			}
+		}
+
+		return result;
+	}
+
 	async function prepareItem(
 		collectionKey: string,
 		primaryKey: number | string,
-		modifiedValues: Record<string, any>,
+		modifiedValues: Record<string, any>
 	): Promise<Record<string, any>> {
 		const item = await getItem(collectionKey, primaryKey);
 
