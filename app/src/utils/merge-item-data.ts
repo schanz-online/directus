@@ -1,4 +1,5 @@
-import { mergeWith } from 'lodash';
+import { isArray, isObject, mergeWith } from 'lodash';
+import { toRaw } from 'vue';
 
 export function mergeItemData(
 	defaultValues: Record<string, any>,
@@ -7,7 +8,20 @@ export function mergeItemData(
 ) {
 	return mergeWith({}, defaultValues, existingValues, edits, customizer);
 
-	function customizer(_from: unknown, to: unknown): any {
-		if (typeof to !== 'undefined') return to;
+	function customizer(objValue: unknown, srcValue: unknown): any {
+		if (typeof srcValue !== 'undefined') {
+			const rawSrcValue = toRaw(srcValue);
+			if (isArray(objValue) && isObject(rawSrcValue)) {
+				if (rawSrcValue.create?.length === 0 && rawSrcValue.update?.length === 0) {
+					return [];
+				}
+
+				return rawSrcValue;
+			}
+
+			return srcValue;
+		}
+
+		return undefined;
 	}
 }
