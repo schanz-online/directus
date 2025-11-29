@@ -14,6 +14,7 @@ import { useRelationM2O } from '@/composables/use-relation-m2o';
 import { useRelationPermissionsM2O } from '@/composables/use-relation-permissions';
 import { RelationQuerySingle, useRelationSingle } from '@/composables/use-relation-single';
 import { useCollectionsStore } from '@/stores/collections';
+import { useFieldsStore } from '@/stores/fields';
 import { adjustFieldsForDisplays } from '@/utils/adjust-fields-for-displays';
 import { getItemRoute } from '@/utils/get-route';
 import { parseFilter } from '@/utils/parse-filter';
@@ -54,12 +55,26 @@ const emit = defineEmits(['input']);
 const values = inject('values', ref<Record<string, any>>({}));
 
 const collectionsStore = useCollectionsStore();
+const fieldsStore = useFieldsStore();
+
+const customFilterDefaultValues = computed(() => {
+	const fields = fieldsStore.getFieldsForCollection(collection.value);
+
+	return Object.fromEntries(fields.filter(field => field.schema !== null && field.schema.default_value !== null).map(field => [
+		field.field,
+		field.schema!.default_value,
+	]));
+});
+
+const customFilterValues = computed(() => {
+	return Object.assign({}, customFilterDefaultValues.value, values.value);
+});
 
 const customFilter = computed(() => {
 	return parseFilter(
 		deepMap(props.filter, (val: any) => {
 			if (val && typeof val === 'string') {
-				return render(val, values.value);
+				return render(val, customFilterValues.value);
 			}
 
 			return val;
