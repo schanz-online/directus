@@ -231,10 +231,7 @@ const menuActive = computed(() => editModalActive.value || selectModalActive.val
 			<div v-if="!nonEditable || (enableLink && displayItem)" class="item-actions" @click.stop>
 				<template v-if="displayItem">
 					<RouterLink v-if="enableLink" v-slot="{ href, navigate }" :to="getLinkForItem()" custom>
-						<VIcon v-if="disabled && !nonEditable" name="launch" />
-
 						<a
-							v-else
 							v-tooltip="$t('navigate_to_item')"
 							:href="href"
 							class="item-link"
